@@ -2,13 +2,16 @@ package com.example.splitwise.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
 @Table(name="expense_table")
 @Getter
 @Setter
+
 public class ExpenseEntity {
 
     @Id
@@ -26,6 +29,18 @@ public class ExpenseEntity {
     private String groupId;
 
     @Column(name = "lent_amount")
-    private double lentAmount;
+    private double lentAmount=0.0d;
+
+    public ExpenseEntity(String user,String otherUserId,String groupId,double lentAmount){
+        this.userId=user;
+        this.otherUserId=otherUserId;
+        this.groupId=groupId;
+        this.lentAmount=lentAmount;
+    }
+
+    public ExpenseEntity(){
+
+    }
+
 
 }

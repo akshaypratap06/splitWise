@@ -3,7 +3,7 @@ package com.example.splitwise.manager;
 import com.example.splitwise.dao.ExpenseDao;
 import com.example.splitwise.dao.UserDao;
 import com.example.splitwise.entity.UserEntity;
-import com.example.splitwise.UserResponse;
+import com.example.splitwise.model.UserResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

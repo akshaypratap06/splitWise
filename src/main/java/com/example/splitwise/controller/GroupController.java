@@ -1,6 +1,6 @@
 package com.example.splitwise.controller;
 
-import com.example.splitwise.Group;
+import com.example.splitwise.model.Group;
 import com.example.splitwise.dao.GroupDao;
 import com.example.splitwise.entity.GroupEntity;
 import org.springframework.beans.factory.annotation.Autowired;

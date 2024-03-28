@@ -2,7 +2,7 @@ package com.example.splitwise.dao;
 
 import com.example.splitwise.entity.ExpenseEntity;
 import com.example.splitwise.entity.ExpenseRecordEntity;
-import com.example.splitwise.UserResponse;
+import com.example.splitwise.model.UserResponse;
 import com.example.splitwise.model.Expense;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -32,7 +32,7 @@ public class ExpenseDao {
         } else {
             e = expenseEntity.get(0);
         }
-        if (expenseEntity2 == null || expenseEntity.isEmpty()) {
+        if (expenseEntity2 == null || expenseEntity2.isEmpty()) {
             e2 = new ExpenseEntity();
             e2.setGroupId(groupId);
             e2.setUserId(user1);
@@ -59,10 +59,10 @@ public class ExpenseDao {
         for (ExpenseEntity ex :
                 expenseEntity) {
             if (expense.containsKey(ex.getGroupId())) {
-                expense.get(ex.getGroupId()).put(ex.getOtherUserId(), ex.getLentAmount());
+                expense.get(ex.getGroupId()).put(ex.getOtherUserId(), Double.parseDouble(String.format("%.2f", ex.getLentAmount())));
             } else {
                 Map<String, Double> userExpense = new HashMap<>();
-                userExpense.put(ex.getOtherUserId(), ex.getLentAmount());
+                userExpense.put(ex.getOtherUserId(),  Double.parseDouble(String.format("%.2f", ex.getLentAmount())));
                 expense.put(ex.getGroupId(), userExpense);
             }
         }
@@ -110,5 +110,9 @@ public class ExpenseDao {
                 saveEntity) {
             s.merge(ex);
         }
+    }
+
+    public List<ExpenseRecordEntity> getAllRecord() {
+        return entityManager.createQuery("select e from ExpenseRecordEntity e",ExpenseRecordEntity.class).getResultList();
     }
 }

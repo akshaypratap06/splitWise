@@ -1,6 +1,6 @@
 package com.example.splitwise.dao;
 
-import com.example.splitwise.Group;
+import com.example.splitwise.model.Group;
 import com.example.splitwise.entity.GroupEntity;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -21,7 +21,10 @@ public class GroupDao {
     @Transactional
     public GroupEntity createGroup(Group group) throws Exception {
         Session s= entityManager.unwrap(Session.class);
-        getGroup(group.getName());
+        Optional<GroupEntity> groupEntity= Optional.ofNullable(s.get(GroupEntity.class, group.getName()));
+        if(groupEntity.isPresent()){
+            throw new Exception("Group already created");
+        }
         return s.merge(group.toGroupEntity());
     }
 

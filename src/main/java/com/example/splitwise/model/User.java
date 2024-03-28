@@ -1,4 +1,4 @@
-package com.example.splitwise;
+package com.example.splitwise.model;
 
 import com.example.splitwise.entity.UserEntity;
 import com.fasterxml.jackson.annotation.JsonProperty;

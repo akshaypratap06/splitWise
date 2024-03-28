@@ -1,4 +1,4 @@
-package com.example.splitwise;
+package com.example.splitwise.model;
 
 import lombok.Getter;
 import lombok.Setter;

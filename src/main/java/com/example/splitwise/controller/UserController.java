@@ -1,7 +1,7 @@
 package com.example.splitwise.controller;
 
-import com.example.splitwise.PatchUser;
-import com.example.splitwise.User;
+import com.example.splitwise.model.PatchUser;
+import com.example.splitwise.model.User;
 import com.example.splitwise.dao.UserDao;
 import com.example.splitwise.entity.UserEntity;
 import com.example.splitwise.manager.UserManager;

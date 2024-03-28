@@ -3,6 +3,7 @@ package com.example.splitwise.model;
 import com.example.splitwise.entity.ExpenseRecordEntity;
 import com.example.splitwise.ExpenseType;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -12,6 +13,7 @@ import java.util.Map;
 
 @Getter
 @Setter
+@AllArgsConstructor
 public class Expense {
     @JsonProperty("type")
     private ExpenseType type;

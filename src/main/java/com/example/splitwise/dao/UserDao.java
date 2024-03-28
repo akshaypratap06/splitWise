@@ -1,8 +1,8 @@
 package com.example.splitwise.dao;
 
 import com.example.splitwise.entity.GroupEntity;
-import com.example.splitwise.PatchUser;
-import com.example.splitwise.User;
+import com.example.splitwise.model.PatchUser;
+import com.example.splitwise.model.User;
 import com.example.splitwise.entity.UserEntity;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -55,6 +55,6 @@ public class UserDao {
     }
     @Transactional
     public List<UserEntity> getUsers(Set<String> users) {
-        return entityManager.createQuery("select u from UserEntity u where u.userId in (:users)", UserEntity.class).setParameter("users",users).getResultList();
+        return entityManager.createQuery("select u from UserEntity u where u.userName in (:users)", UserEntity.class).setParameter("users",users).getResultList();
     }
 }

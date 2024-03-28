@@ -1,5 +1,6 @@
-package com.example.splitwise;
+package com.example.splitwise.model;
 
+import com.example.splitwise.model.User;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -12,7 +13,7 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class PatchUser extends User{
+public class PatchUser extends User {
     @JsonProperty("groups")
     private List<String> groups;
 

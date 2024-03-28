@@ -1,6 +1,7 @@
 package com.example.splitwise.controller;
 
 import com.example.splitwise.entity.ExpenseEntity;
+import com.example.splitwise.entity.ExpenseRecordEntity;
 import com.example.splitwise.manager.ExpenseManager;
 import com.example.splitwise.model.Expense;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,5 +52,10 @@ public class ExpenseController {
         } catch (Exception e) {
             return ResponseEntity.status(NOT_FOUND).body(e.getMessage());
         }
+    }
+
+    @GetMapping("v1/expenseRecord")
+    public List<ExpenseRecordEntity> getAllRecordEntity(){
+        return expenseManager.getAllExpenseRecord();
     }
 }

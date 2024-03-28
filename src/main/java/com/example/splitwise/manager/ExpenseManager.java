@@ -1,6 +1,7 @@
 package com.example.splitwise.manager;
 
-import com.example.splitwise.ExpenseAmount;
+import com.example.splitwise.dao.GroupDao;
+import com.example.splitwise.model.ExpenseAmount;
 import com.example.splitwise.dao.UserDao;
 import com.example.splitwise.entity.ExpenseEntity;
 import com.example.splitwise.entity.ExpenseRecordEntity;
@@ -22,13 +23,44 @@ public class ExpenseManager {
     @Autowired
     private UserDao userDao;
 
+    @Autowired
+    private GroupDao groupDao;
+
     public ExpenseRecordEntity createExpense(Expense expense) throws Exception {
         validateRequest(expense);
         if (expense.getType().equals(ExpenseType.PERCENTAGE)) {
             updateExpense(expense);
         }
-        divide(expense);
+        dividev2(expense);
         return expenseDao.saveRecord(expense);
+    }
+
+    private void dividev2(Expense expense) {
+        Set<String> users= new HashSet<>(expense.getPaidFor());
+        users.addAll(expense.getPaidBy().keySet());
+        Map<String,Map<String,ExpenseEntity>> expenseEntityMap= new HashMap<>();
+        users.forEach(p->{
+            expenseEntityMap.put(p,new HashMap<>());
+            Map<String,ExpenseEntity> expenseMap= expenseEntityMap.get(p);
+            users.forEach(a->expenseMap.put(a,new ExpenseEntity(p,a,expense.getGroupId(),0)));
+            expenseMap.remove(p);
+        });
+        List<ExpenseEntity> expenseEntities= expenseDao.getExpenses(users,expense.getGroupId());
+        expenseEntities.forEach(p->{
+            expenseEntityMap.get(p.getUserId()).put(p.getOtherUserId(),p);
+        });
+        for(Map.Entry<String,Integer> user:expense.getPaidBy().entrySet()){
+            double share= (double) user.getValue() /expense.getPaidFor().size();
+            for(String payUser:expense.getPaidFor()){
+                if(user.getKey().equals(payUser))
+                    continue;
+                expenseEntityMap.get(user.getKey()).get(payUser).setLentAmount(expenseEntityMap.get(user.getKey()).get(payUser).getLentAmount()+share);
+                expenseEntityMap.get(payUser).get(user.getKey()).setLentAmount(expenseEntityMap.get(payUser).get(user.getKey()).getLentAmount()-share);
+            }
+        }
+        List<ExpenseEntity> allEntity= getAllEntity(expenseEntityMap);
+
+        expenseDao.updateAllExpense(allEntity);
     }
 
     private void validateRequest(Expense expense) throws Exception {
@@ -39,6 +71,7 @@ public class ExpenseManager {
         if(userList.size()!=users.size()){
             throw new Exception("Unknown user detected");
         }
+        groupDao.getGroup(expense.getGroupId());
     }
 
     private void updateExpense(Expense expense) {
@@ -164,5 +197,9 @@ public class ExpenseManager {
     public ExpenseRecordEntity updateThisExpense(String uuid, Expense expense) throws Exception {
         deleteExpense(uuid);
         return createExpense(expense);
+    }
+
+    public List<ExpenseRecordEntity> getAllExpenseRecord() {
+        return expenseDao.getAllRecord();
     }
 }
