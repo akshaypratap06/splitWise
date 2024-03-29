@@ -14,14 +14,19 @@ public class ExpenseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @JsonIgnore
+    @Getter
+    @Setter
     private int id;
-
+    @Getter
+    @Setter
     @Column(name="user_id")
     private String userId;
-
+    @Getter
+    @Setter
     @Column(name="other_user_id")
     private String otherUserId;
-
+    @Getter
+    @Setter
     @Column(name="group_id")
     private String groupId;
 
@@ -43,39 +48,7 @@ public class ExpenseEntity {
         this.lentAmount= Float.parseFloat(String.format("%.2f",lentAmount));
     }
 
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    public String getUserId() {
-        return userId;
-    }
-
-    public void setUserId(String userId) {
-        this.userId = userId;
-    }
-
-    public String getOtherUserId() {
-        return otherUserId;
-    }
-
-    public void setOtherUserId(String otherUserId) {
-        this.otherUserId = otherUserId;
-    }
-
-    public String getGroupId() {
-        return groupId;
-    }
-
-    public void setGroupId(String groupId) {
-        this.groupId = groupId;
-    }
-
     public float getLentAmount() {
-        return lentAmount;
+        return Float.parseFloat(String.format("%.2f",lentAmount));
     }
 }
