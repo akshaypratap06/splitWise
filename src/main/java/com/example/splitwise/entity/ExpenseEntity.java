@@ -9,9 +9,6 @@ import lombok.Setter;
 
 @Entity
 @Table(name="expense_table")
-@Getter
-@Setter
-
 public class ExpenseEntity {
 
     @Id
@@ -29,9 +26,9 @@ public class ExpenseEntity {
     private String groupId;
 
     @Column(name = "lent_amount")
-    private double lentAmount=0.0d;
+    private float lentAmount=0.0f;
 
-    public ExpenseEntity(String user,String otherUserId,String groupId,double lentAmount){
+    public ExpenseEntity(String user,String otherUserId,String groupId,float lentAmount){
         this.userId=user;
         this.otherUserId=otherUserId;
         this.groupId=groupId;
@@ -42,5 +39,43 @@ public class ExpenseEntity {
 
     }
 
+    public void setLentAmount(float lentAmount){
+        this.lentAmount= Float.parseFloat(String.format("%.2f",lentAmount));
+    }
 
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
+    }
+
+    public String getOtherUserId() {
+        return otherUserId;
+    }
+
+    public void setOtherUserId(String otherUserId) {
+        this.otherUserId = otherUserId;
+    }
+
+    public String getGroupId() {
+        return groupId;
+    }
+
+    public void setGroupId(String groupId) {
+        this.groupId = groupId;
+    }
+
+    public float getLentAmount() {
+        return lentAmount;
+    }
 }

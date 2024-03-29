@@ -38,17 +38,17 @@ public class PreReqController {
         userDao.patchUser(new PatchUser("akshay", Collections.singletonList("default")));
         userDao.patchUser(new PatchUser("pratap",Collections.singletonList("default")));
         userDao.patchUser(new PatchUser("singh",Collections.singletonList("default")));
-        Map<String,Integer> req1= new HashMap<>();
-        req1.put("pratap",400);
-        List<String> userList= List.of("akshay","pratap","singh");
-        Expense expense= new Expense(ExpenseType.EQUAL,req1,userList,400,"default");
+        Map<String,Float> req1= new HashMap<>();
+        req1.put("pratap",400f);
+        Map<String,Float> userList= Map.of("akshay",0f,"pratap",0f,"singh",0f);
+        Expense expense= new Expense(ExpenseType.EQUAL,req1,new HashMap<>(userList),400,"default",ExpenseType.EQUAL);
         expenseManager.createExpense(expense);
-        req1.put("pratap",200);
-        expense= new Expense(ExpenseType.EQUAL,req1,List.of("akshay","pratap"),200,"default");
+        req1.put("pratap",200f);
+        expense= new Expense(ExpenseType.EQUAL,req1,new HashMap<>(Map.of("akshay",0f,"pratap",0f)),200,"default",ExpenseType.EQUAL);
         expenseManager.createExpense(expense);
         req1.remove("pratap");
-        req1.put("singh",1000);
-        expense= new Expense(ExpenseType.EQUAL,req1,List.of("akshay","pratap"),1000,"default");
+        req1.put("singh",1000f);
+        expense= new Expense(ExpenseType.EQUAL,req1,new HashMap<>(Map.of("akshay",0f,"pratap",0f)),1000,"default",ExpenseType.EQUAL);
         expenseManager.createExpense(expense);
         return "Created all users and groups";
     }

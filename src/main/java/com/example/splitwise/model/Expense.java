@@ -5,6 +5,7 @@ import com.example.splitwise.ExpenseType;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.ArrayList;
@@ -14,32 +15,35 @@ import java.util.Map;
 @Getter
 @Setter
 @AllArgsConstructor
+@NoArgsConstructor
 public class Expense {
-    @JsonProperty("type")
-    private ExpenseType type;
+    @JsonProperty("paid_by_type")
+    private ExpenseType paidByType;
     @JsonProperty("paid_by")
-    private Map<String,Integer> paidBy;
+    private Map<String,Float> paidBy;
     @JsonProperty("paid_for")
-    private List<String> paidFor;
+    private Map<String,Float> paidFor;
     @JsonProperty("paid_amount")
-    private int paidAmount;
+    private float paidAmount;
     @JsonProperty("group_id")
     private String groupId;
+    @JsonProperty("paid_for_type")
+    private ExpenseType paidForType;
 
     public ExpenseRecordEntity toExpenseRecordEntity(){
         ExpenseRecordEntity e= new ExpenseRecordEntity();
-        e.setPaidAmount(this.paidAmount);
+        e.setPaidAmount(Float.parseFloat(String.format("%.2f",this.paidAmount)));
         e.setPaidBy(convertPaid(this.getPaidBy()));
-        e.setPaidFor(String.join(";",this.paidFor));
+        e.setPaidFor(convertPaid(this.paidFor));
         e.setGroupId(this.groupId);
         return e;
     }
 
-    private String convertPaid(Map<String, Integer> paidBy) {
+    private String convertPaid(Map<String, Float> paidBy) {
         List<String> paidByList= new ArrayList<>();
-        for (Map.Entry<String, Integer> currObj:
+        for (Map.Entry<String, Float> currObj:
              paidBy.entrySet()) {
-            paidByList.add(currObj.getKey().trim()+"_"+currObj.getValue());
+            paidByList.add(currObj.getKey().trim()+"_"+String.format("%.2f",currObj.getValue()));
         }
         return String.join(";",paidByList);
     }

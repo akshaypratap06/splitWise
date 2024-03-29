@@ -25,7 +25,7 @@ public class ExpenseRecordEntity {
     @Column(name = "paid_for")
     private String paidFor;
     @Column(name = "paid_amount")
-    private int paidAmount;
+    private float paidAmount;
     @Column(name = "group_id")
     private String groupId;
 

@@ -49,7 +49,6 @@ public class ExpenseDao {
 
     @Transactional
     public UserResponse getUserReport(String userID) {
-
         List<ExpenseEntity> expenseEntity = entityManager.createQuery("SELECT e from ExpenseEntity e where e.userId= :userId", ExpenseEntity.class).setParameter("userId", userID).getResultList();
         return mapToUserResponse(expenseEntity, userID);
     }

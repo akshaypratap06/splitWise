@@ -1,144 +1,188 @@
 package com.example.splitwise.manager;
 
+import com.example.splitwise.ExpenseType;
+import com.example.splitwise.dao.ExpenseDao;
 import com.example.splitwise.dao.GroupDao;
-import com.example.splitwise.model.ExpenseAmount;
 import com.example.splitwise.dao.UserDao;
 import com.example.splitwise.entity.ExpenseEntity;
 import com.example.splitwise.entity.ExpenseRecordEntity;
-import com.example.splitwise.ExpenseType;
-import com.example.splitwise.dao.ExpenseDao;
 import com.example.splitwise.entity.UserEntity;
 import com.example.splitwise.model.Expense;
+import com.example.splitwise.model.ExpenseAmount;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 public class ExpenseManager {
     @Autowired
-    private ExpenseDao expenseDao;
+    protected ExpenseDao expenseDao;
 
     @Autowired
-    private UserDao userDao;
+    protected UserDao userDao;
 
     @Autowired
-    private GroupDao groupDao;
+    protected GroupDao groupDao;
 
-    public ExpenseRecordEntity createExpense(Expense expense) throws Exception {
-        validateRequest(expense);
-        if (expense.getType().equals(ExpenseType.PERCENTAGE)) {
-            updateExpense(expense);
+    public ExpenseRecordEntity  createExpense(Expense expense) throws Exception {
+        if (expense.getPaidByType().equals(ExpenseType.PERCENTAGE)) {
+            updateExpenseByPercentage(expense.getPaidBy(),expense.getPaidAmount());
         }
-        dividev2(expense);
+        if(expense.getPaidForType().equals(ExpenseType.PERCENTAGE)){
+            updateExpenseByPercentage(expense.getPaidFor(),expense.getPaidAmount());
+        }else if(expense.getPaidForType().equals(ExpenseType.EQUAL)) {
+            updateExpensePaidForEqual(expense.getPaidFor(),expense.getPaidAmount());
+        }
+        validateCount(expense);
+        Set<String> users = findAllUsers(expense);
+        validateRequest(users,expense.getGroupId());
+        expenseSplitter(expense,users);
         return expenseDao.saveRecord(expense);
     }
 
-    private void dividev2(Expense expense) {
-        Set<String> users= new HashSet<>(expense.getPaidFor());
+    private Set<String> findAllUsers(Expense expense) {
+        Set<String> users= new HashSet<>();
+        users.addAll(expense.getPaidFor().keySet());
         users.addAll(expense.getPaidBy().keySet());
-        Map<String,Map<String,ExpenseEntity>> expenseEntityMap= new HashMap<>();
-        users.forEach(p->{
-            expenseEntityMap.put(p,new HashMap<>());
-            Map<String,ExpenseEntity> expenseMap= expenseEntityMap.get(p);
-            users.forEach(a->expenseMap.put(a,new ExpenseEntity(p,a,expense.getGroupId(),0)));
+        return users;
+    }
+
+    protected void validateCount(Expense expense) throws Exception {
+        double countPaidBy= expense.getPaidBy().values().stream().mapToDouble(p-> Double.parseDouble(Float.toString(p))).sum();
+        double countPaidFor= expense.getPaidFor().values().stream().mapToDouble(p-> Double.parseDouble(Float.toString(p))).sum();
+        if(expense.getPaidAmount()-countPaidBy>0 || expense.getPaidAmount()-countPaidFor>0 || expense.getPaidAmount()-countPaidBy<0 || expense.getPaidAmount()-countPaidFor<0){
+            throw new Exception("Wrong paid amount"+expense.getPaidAmount()+" "+countPaidBy+" "+countPaidFor);
+        }
+    }
+
+    protected void updateExpensePaidForEqual(Map<String,Float> expense,Float paidAmount) {
+        float remainingPaidAmount=paidAmount;
+        float share=Float.parseFloat(String.format("%.2f",paidAmount/expense.size()));
+        int size=expense.size();
+        int count=0;
+        for (Map.Entry<String, Float> ex : expense.entrySet()) {
+            count++;
+            if(count!=size) {
+                ex.setValue(share);
+                remainingPaidAmount-=share;
+            }else{
+                ex.setValue(Float.parseFloat(String.format("%.2f",remainingPaidAmount)));
+            }
+        }
+    }
+
+    protected void expenseSplitter(Expense expense, Set<String> allUser) {
+        expenseCreator(expense, allUser);
+    }
+
+    private void expenseCreator(Expense expense, Set<String> allUser) {
+
+        Map<String, Float> giverUser = new HashMap<>();
+        Map<String, Float> takerUser = new HashMap<>();
+        updateGiverAndTakerMap(expense, allUser, takerUser, giverUser);
+
+        Map<String, Map<String, ExpenseEntity>> expenseEntityMap = generateExpenseEntityMap(expense, allUser);
+
+        List<ExpenseEntity> expenseEntities = expenseDao.getExpenses(allUser, expense.getGroupId());
+        expenseEntities.forEach(p -> expenseEntityMap.get(p.getUserId()).put(p.getOtherUserId(), p));
+
+        Queue<ExpenseAmount> queueOfGiver = convertToExpenseQueue(giverUser,true);
+        Queue<ExpenseAmount> queueOfTaker = convertToExpenseQueue(takerUser,false);
+
+        expenseEntityUpdater(queueOfGiver, queueOfTaker, expenseEntityMap);
+        List<ExpenseEntity> expenseEntityList = getAllExpenseEntity(expenseEntityMap);
+        expenseDao.updateAllExpense(expenseEntityList);
+    }
+
+    private void expenseEntityUpdater(Queue<ExpenseAmount> queueOfGiver, Queue<ExpenseAmount> queueOfTaker, Map<String, Map<String, ExpenseEntity>> expenseEntityMap) {
+        while (!queueOfGiver.isEmpty() && !queueOfTaker.isEmpty()) {
+            ExpenseAmount giverObj = queueOfGiver.peek();
+            ExpenseAmount takerObj = queueOfTaker.peek();
+            if (Math.abs(giverObj.getAmount()) == Math.abs(takerObj.getAmount())) {
+                expenseEntityMap.get(giverObj.getUser()).get(takerObj.getUser()).setLentAmount(expenseEntityMap.get(giverObj.getUser()).get(takerObj.getUser()).getLentAmount() + Math.abs(takerObj.getAmount()));
+                expenseEntityMap.get(takerObj.getUser()).get(giverObj.getUser()).setLentAmount(expenseEntityMap.get(takerObj.getUser()).get(giverObj.getUser()).getLentAmount() - Math.abs(takerObj.getAmount()));
+                queueOfGiver.poll();
+                queueOfTaker.poll();
+            } else if (Math.abs(takerObj.getAmount()) < Math.abs(giverObj.getAmount())) {
+                expenseEntityMap.get(giverObj.getUser()).get(takerObj.getUser()).setLentAmount(expenseEntityMap.get(giverObj.getUser()).get(takerObj.getUser()).getLentAmount() + Math.abs(takerObj.getAmount()));
+                expenseEntityMap.get(takerObj.getUser()).get(giverObj.getUser()).setLentAmount(expenseEntityMap.get(takerObj.getUser()).get(giverObj.getUser()).getLentAmount() - Math.abs(takerObj.getAmount()));
+                queueOfTaker.poll();
+                giverObj.setAmount(giverObj.getAmount() - Math.abs(takerObj.getAmount()));
+            } else {
+                expenseEntityMap.get(giverObj.getUser()).get(takerObj.getUser()).setLentAmount(expenseEntityMap.get(giverObj.getUser()).get(takerObj.getUser()).getLentAmount() + Math.abs(giverObj.getAmount()));
+                expenseEntityMap.get(takerObj.getUser()).get(giverObj.getUser()).setLentAmount(expenseEntityMap.get(takerObj.getUser()).get(giverObj.getUser()).getLentAmount() - Math.abs(giverObj.getAmount()));
+                queueOfGiver.poll();
+                takerObj.setAmount(takerObj.getAmount() + giverObj.getAmount());
+            }
+        }
+    }
+
+    private void updateGiverAndTakerMap(Expense expense, Set<String> allUser, Map<String, Float> takerUser, Map<String, Float> giverUser) {
+        allUser.forEach(p -> {
+            float payBy = expense.getPaidBy().getOrDefault(p, 0.0f);
+            float payFor = expense.getPaidFor().getOrDefault(p, 0.0f);
+            float finalResult = payBy - payFor;
+            if (finalResult < 0) {
+                takerUser.put(p, finalResult);
+            } else if (finalResult > 0) {
+                giverUser.put(p, finalResult);
+            }
+        });
+    }
+
+    protected Map<String, Map<String, ExpenseEntity>> generateExpenseEntityMap(Expense expense, Set<String> users) {
+        Map<String, Map<String, ExpenseEntity>> expenseEntityMap= new HashMap<>();
+        users.forEach(p -> {
+            expenseEntityMap.put(p, new HashMap<>());
+            Map<String, ExpenseEntity> expenseMap = expenseEntityMap.get(p);
+            users.forEach(a -> expenseMap.put(a, new ExpenseEntity(p, a, expense.getGroupId(), 0)));
             expenseMap.remove(p);
         });
-        List<ExpenseEntity> expenseEntities= expenseDao.getExpenses(users,expense.getGroupId());
-        expenseEntities.forEach(p->{
-            expenseEntityMap.get(p.getUserId()).put(p.getOtherUserId(),p);
-        });
-        for(Map.Entry<String,Integer> user:expense.getPaidBy().entrySet()){
-            double share= (double) user.getValue() /expense.getPaidFor().size();
-            for(String payUser:expense.getPaidFor()){
-                if(user.getKey().equals(payUser))
-                    continue;
-                expenseEntityMap.get(user.getKey()).get(payUser).setLentAmount(expenseEntityMap.get(user.getKey()).get(payUser).getLentAmount()+share);
-                expenseEntityMap.get(payUser).get(user.getKey()).setLentAmount(expenseEntityMap.get(payUser).get(user.getKey()).getLentAmount()-share);
-            }
-        }
-        List<ExpenseEntity> allEntity= getAllEntity(expenseEntityMap);
-
-        expenseDao.updateAllExpense(allEntity);
+        return expenseEntityMap;
     }
 
-    private void validateRequest(Expense expense) throws Exception {
-        Set<String> users= new HashSet<>();
-        users.addAll(expense.getPaidFor());
-        users.addAll(expense.getPaidBy().keySet());
-        List<UserEntity> userList= userDao.getUsers(users);
-        if(userList.size()!=users.size()){
+    protected Queue<ExpenseAmount> convertToExpenseQueue(Map<String, Float> users,boolean reverse) {
+        List<ExpenseAmount> expenseAmountList= new ArrayList<>();
+        for (Map.Entry<String, Float> user :
+                users.entrySet()) {
+            expenseAmountList.add(new ExpenseAmount(user.getValue(), user.getKey()));
+        }
+        if(!reverse) {
+            expenseAmountList.sort((o1, o2) -> Float.compare(o1.getAmount(), o2.getAmount()));
+        }else{
+            expenseAmountList.sort((o1, o2) -> -(Float.compare(o1.getAmount(), o2.getAmount())));
+        }
+        return new ArrayDeque<>(expenseAmountList);
+    }
+
+    protected void validateRequest(Set<String> users,String groupId) throws Exception {
+        List<UserEntity> userList = userDao.getUsers(users);
+        if (userList.size() != users.size()) {
             throw new Exception("Unknown user detected");
         }
-        groupDao.getGroup(expense.getGroupId());
+        groupDao.getGroup(groupId);
+
     }
 
-    private void updateExpense(Expense expense) {
-        for (Map.Entry<String, Integer> ex: expense.getPaidBy().entrySet()) {
-            expense.getPaidBy().put(ex.getKey(),percentageCalculator(expense.getPaidAmount(),ex.getValue()));
-        }
-    }
-
-    private Integer percentageCalculator(int paidAmount, Integer value) {
-        return (paidAmount*value)/100;
-    }
-
-    private void divide(Expense expense) {
-        Map<Integer,String> reverseMap= new TreeMap<>(Collections.reverseOrder());
-        putAllTreeMap(reverseMap,expense.getPaidBy());
-        float share = (float) expense.getPaidAmount() / expense.getPaidFor().size();
-        Queue<ExpenseAmount> expenseAmountQueue= convertToQueue(reverseMap,share);
-        for (String user : expense.getPaidFor()) {
-            float userShare=share;
-            if(expense.getPaidBy().containsKey(user)){
-                if(userShare<=expense.getPaidBy().get(user))
-                    continue;
-                userShare-=expense.getPaidBy().get(user);
-                amountUpation(expense, user, userShare, expenseAmountQueue);
+    protected void updateExpenseByPercentage(Map<String, Float> expense,float paidAmount) {
+        float remainingPaidAmount=paidAmount;
+        int count=0;
+        int size=expense.entrySet().size();
+        for (Map.Entry<String, Float> ex : expense.entrySet()) {
+            count++;
+            if(count!=size) {
+                float currPercentage= percentageCalculator(paidAmount,ex.getValue());
+                ex.setValue(currPercentage);
+                remainingPaidAmount-=currPercentage;
             }else{
-                amountUpation(expense, user, userShare, expenseAmountQueue);
+                ex.setValue(Float.parseFloat(String.format("%.2f",remainingPaidAmount)));
             }
         }
     }
 
-    private void amountUpation(Expense expense, String user, float userShare, Queue<ExpenseAmount> expenseAmountQueue) {
-        while(userShare>0.1f){
-            ExpenseAmount currExpenseAmount= expenseAmountQueue.peek();
-            if(currExpenseAmount.getAmount()> userShare){
-                expenseDao.updateExpense(user,currExpenseAmount.getUser(),userShare, expense.getGroupId());
-                currExpenseAmount.setAmount(currExpenseAmount.getAmount()- userShare);
-                userShare =0;
-            } else if (currExpenseAmount.getAmount()== userShare) {
-                expenseDao.updateExpense(user,currExpenseAmount.getUser(),userShare, expense.getGroupId());
-                expenseAmountQueue.poll();
-                userShare=0;
-            }else{
-                userShare -= currExpenseAmount.getAmount();
-                expenseDao.updateExpense(user,currExpenseAmount.getUser(),currExpenseAmount.getAmount(), expense.getGroupId());
-                expenseAmountQueue.poll();
-            }
-
-        }
-    }
-
-    private void putAllTreeMap(Map<Integer, String> reverseMap, Map<String, Integer> paidBy) {
-        paidBy.forEach((key, value) -> {reverseMap.put(value,key);});
-    }
-
-    private Queue<ExpenseAmount> convertToQueue(Map<Integer, String> reverseMap,float share) {
-        Queue<ExpenseAmount> q= new ArrayDeque<>();
-        for (Map.Entry<Integer, String> currObj:
-             reverseMap.entrySet()) {
-            ExpenseAmount e= new ExpenseAmount();
-            e.setUser(currObj.getValue());
-            e.setAmount(currObj.getKey()-share);
-            if(e.getAmount()<=0)
-                continue;
-            q.add(e);
-        }
-        return q;
-
+    protected Float percentageCalculator(Float paidAmount, Float value) {
+        return Float.parseFloat(String.format("%.2f",((paidAmount * value) / 100)));
     }
 
     public List<ExpenseEntity> getAllExpense() {
@@ -147,51 +191,46 @@ public class ExpenseManager {
 
     public void deleteExpense(String uuid) throws Exception {
         ExpenseRecordEntity expenseRecordEntity = expenseDao.getRecord(UUID.fromString(uuid));
-        Map<String,Integer> paidBy= convertToPaidBy(expenseRecordEntity.getPaidBy());
-        List<ExpenseEntity> expenseEntities= expenseDao.getExpenses(Arrays.stream(expenseRecordEntity.getPaidFor().split(";")).collect(Collectors.toSet()),expenseRecordEntity.getGroupId());
-        Map<String,Map<String,ExpenseEntity>> expenseEntityMap= expenseEntityMap(expenseEntities);
-        for (Map.Entry<String,Integer> payer: paidBy.entrySet()) {
-            String payerName= payer.getKey();
-            Integer amount=payer.getValue();
-            float share= (float) amount /expenseRecordEntity.getPaidFor().split(";").length;
-            for(String perPaid: expenseRecordEntity.getPaidFor().split(";")){
-                if(perPaid.equalsIgnoreCase(payerName))
-                    continue;
-                ExpenseEntity expenseEntity1= expenseEntityMap.get(payerName).get(perPaid);
-                ExpenseEntity expenseEntity2= expenseEntityMap.get(perPaid).get(payerName);
-                expenseEntity1.setLentAmount(expenseEntity1.getLentAmount()-share);
-                expenseEntity2.setLentAmount(expenseEntity2.getLentAmount()+share);
-            }
-        }
-        List<ExpenseEntity> saveEntity= getAllEntity(expenseEntityMap);
-        expenseDao.updateAllExpense(saveEntity);
+
+        Set<String> allUser= new HashSet<>();
+        allUser.addAll(getPaidUsers(expenseRecordEntity.getPaidFor()));
+        allUser.addAll(getPaidUsers(expenseRecordEntity.getPaidBy()));
+
+        Map<String, Float> paidBy = convertToPaid(expenseRecordEntity.getPaidBy());
+        Map<String, Float> paidFor = convertToPaid(expenseRecordEntity.getPaidFor());
+
+        Expense expense= new Expense();
+        expense.setPaidBy(paidFor);
+        expense.setPaidFor(paidBy);
+        expense.setGroupId(expenseRecordEntity.getGroupId());
+        expense.setPaidAmount(expenseRecordEntity.getPaidAmount());
+        expenseCreator(expense,allUser);
         expenseDao.deleteRecord(UUID.fromString(uuid));
     }
 
-    private List<ExpenseEntity> getAllEntity(Map<String, Map<String, ExpenseEntity>> expenseEntityMap) {
-        return expenseEntityMap.entrySet().stream().flatMap(p->p.getValue().values().stream()).toList();
-    }
-
-    private Map<String, Map<String, ExpenseEntity>> expenseEntityMap(List<ExpenseEntity> expenseEntities) {
-        Map<String, Map<String, ExpenseEntity>> returnMap= expenseEntities.stream().map(ExpenseEntity::getUserId).distinct().collect(Collectors.toMap(e->e,p->new HashMap<>()));
-        expenseEntities.forEach(p->{
-            String user= p.getUserId();
-            String otherUser= p.getOtherUserId();
-            Map<String,ExpenseEntity> mapper= returnMap.get(user);
-            mapper.put(otherUser,p);
-        });
-        return returnMap;
-    }
-
-    private Map<String, Integer> convertToPaidBy(String paidBy) {
-        String[] paidByUser= paidBy.split(";");
-        Map<String,Integer> paidByMap= new HashMap<>();
-        for (String payer:
-             paidByUser) {
-            String[] paidByArray= payer.split("_");
-            paidByMap.put(paidByArray[0],Integer.parseInt(paidByArray[1]));
+    protected Set<String> getPaidUsers(String paidFor) {
+        Set<String> user=new HashSet<>();
+        String[] arr1=paidFor.split(";");
+        for (String arr:
+             arr1) {
+            String []arr2= arr.split("_");
+            user.add(arr2[0]);
         }
-        return paidByMap;
+        return user;
+    }
+
+    protected List<ExpenseEntity> getAllExpenseEntity(Map<String, Map<String, ExpenseEntity>> expenseEntityMap) {
+        return expenseEntityMap.entrySet().stream().flatMap(p -> p.getValue().values().stream()).toList();
+    }
+
+    protected Map<String, Float> convertToPaid(String paid) {
+        String[] paidByUser = paid.split(";");
+        Map<String, Float> paidMap = new HashMap<>();
+        for (String payer : paidByUser) {
+            String[] paidByArray = payer.split("_");
+            paidMap.put(paidByArray[0], Float.parseFloat(paidByArray[1]));
+        }
+        return paidMap;
     }
 
     public ExpenseRecordEntity updateThisExpense(String uuid, Expense expense) throws Exception {
