@@ -14,11 +14,15 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class PatchUser extends User {
-    @JsonProperty("groups")
-    private List<String> groups;
+    @JsonProperty("group")
+    private String group;
 
-    public PatchUser(String user, List<String> groups){
-        this.groups=groups;
+    @JsonProperty("friend")
+    private String friend;
+
+    public PatchUser(String user, String groups,String friend){
+        this.group=groups;
+        this.friend=friend;
         super.setUserName(user);
     }
 

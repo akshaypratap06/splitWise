@@ -1,5 +1,7 @@
 package com.example.splitwise.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -7,6 +9,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -32,5 +35,14 @@ public class UserEntity {
     @JsonManagedReference
     private List<GroupEntity> groupEntityList;
 
+    @Column(name="friends")
+    private List<String> friendEntityList;
 
+    public List<String> getFriendEntityList() {
+        return friendEntityList==null?new ArrayList<>():friendEntityList;
+    }
+
+    public void setFriendEntityList(List<String> friendEntityList) {
+        this.friendEntityList = friendEntityList==null?new ArrayList<>():friendEntityList;
+    }
 }

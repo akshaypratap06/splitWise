@@ -1,7 +1,6 @@
 package com.example.splitwise.controller;
 
 import com.example.splitwise.ExpenseType;
-import com.example.splitwise.dao.ExpenseDao;
 import com.example.splitwise.dao.GroupDao;
 import com.example.splitwise.dao.UserDao;
 import com.example.splitwise.manager.ExpenseManager;
@@ -13,7 +12,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.*;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 public class PreReqController {
@@ -35,9 +36,9 @@ public class PreReqController {
 
 
 
-        userDao.patchUser(new PatchUser("akshay", Collections.singletonList("default")));
-        userDao.patchUser(new PatchUser("pratap",Collections.singletonList("default")));
-        userDao.patchUser(new PatchUser("singh",Collections.singletonList("default")));
+        userDao.addUserToGroup(new PatchUser("akshay", "default"));
+        userDao.addUserToGroup(new PatchUser("pratap","default"));
+        userDao.addUserToGroup(new PatchUser("singh","default"));
         Map<String,Float> req1= new HashMap<>();
         req1.put("pratap",400f);
         Map<String,Float> userList= Map.of("akshay",0f,"pratap",0f,"singh",0f);

@@ -44,10 +44,46 @@ public class UserController {
         return userDao.getAllUser();
     }
 
-    @PatchMapping("v1/user")
+    @PatchMapping("v1/add-user-to-group")
     public ResponseEntity<Object> addGroupToUser(@RequestBody PatchUser user){
         try {
-            return ResponseEntity.ok(userDao.patchUser(user));
+            return ResponseEntity.ok(userDao.addUserToGroup(user));
+        } catch (Exception e) {
+            return ResponseEntity.status(NOT_FOUND).body(e.getMessage());
+        }
+    }
+
+    @PatchMapping("v1/remove-user-from-group")
+    public ResponseEntity<Object> removeGroupFromUser(@RequestBody PatchUser user){
+        try {
+            return ResponseEntity.ok(userDao.removeUserFromGroup(user));
+        } catch (Exception e) {
+            return ResponseEntity.status(NOT_FOUND).body(e.getMessage());
+        }
+    }
+
+    @PatchMapping("v1/add-friend-to-user")
+    public ResponseEntity<Object> addFriendToUser(@RequestBody PatchUser user){
+        try {
+            return ResponseEntity.ok(userDao.addFriendToUser(user));
+        } catch (Exception e) {
+            return ResponseEntity.status(NOT_FOUND).body(e.getMessage());
+        }
+    }
+
+    @PatchMapping("v1/remove-friend-from-user")
+    public ResponseEntity<Object> removeFriendFromUser(@RequestBody PatchUser user){
+        try {
+            return ResponseEntity.ok(userDao.removeFriendFromUser(user));
+        } catch (Exception e) {
+            return ResponseEntity.status(NOT_FOUND).body(e.getMessage());
+        }
+    }
+
+    @DeleteMapping("v1/user/{userId}")
+    public  ResponseEntity<Object> deleteUser(@PathVariable String userId){
+        try {
+            return ResponseEntity.ok(userDao.deleteUser(userId));
         } catch (Exception e) {
             return ResponseEntity.status(NOT_FOUND).body(e.getMessage());
         }
