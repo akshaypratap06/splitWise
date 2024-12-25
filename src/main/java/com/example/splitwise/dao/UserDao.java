@@ -92,10 +92,10 @@ public class UserDao {
         if(friendEntity.isEmpty()){
             throw new Exception("Friend's User not yet created");
         }
-        List<String> userEntityList= userEntity.get().getFriendEntityList();
+        Set<String> userEntityList= userEntity.get().getFriendEntityList();
         userEntityList.add(friendEntity.get().getUserName());
         userEntity.get().setFriendEntityList(userEntityList);
-        List<String> friendEntityList= friendEntity.get().getFriendEntityList();
+        Set<String> friendEntityList= friendEntity.get().getFriendEntityList();
         friendEntityList.add(userEntity.get().getUserName());
         friendEntity.get().setFriendEntityList(friendEntityList);
         s.merge(friendEntity.get());
@@ -112,9 +112,9 @@ public class UserDao {
         if(friendEntity.isEmpty()){
             throw new Exception("Friend's User not yet created");
         }
-        List<String> userEntityList= userEntity.get().getFriendEntityList().stream().filter(friend-> !friend.equalsIgnoreCase(user.getFriend())).collect(Collectors.toList());
+        Set<String> userEntityList= userEntity.get().getFriendEntityList().stream().filter(friend-> !friend.equalsIgnoreCase(user.getFriend())).collect(Collectors.toSet());
         userEntity.get().setFriendEntityList(userEntityList);
-        List<String> friendEntityList= friendEntity.get().getFriendEntityList().stream().filter(friend-> !friend.equalsIgnoreCase(user.getUserName())).collect(Collectors.toList());
+        Set<String> friendEntityList= friendEntity.get().getFriendEntityList().stream().filter(friend-> !friend.equalsIgnoreCase(user.getUserName())).collect(Collectors.toSet());
         friendEntity.get().setFriendEntityList(friendEntityList);
         s.merge(friendEntity.get());
         return s.merge(userEntity.get());
