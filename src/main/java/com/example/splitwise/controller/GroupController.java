@@ -40,9 +40,9 @@ public class GroupController {
     }
 
     @GetMapping("v1/groups/{group}")
-    public ResponseEntity<Object> getAllUsers(@PathVariable String group){
+    public ResponseEntity<Object> getGroup(@PathVariable String group){
         try {
-            return ResponseEntity.ok(groupDao.getGroup(group).getUsers());
+            return ResponseEntity.ok(utilManager.convertToGroupDtoList(groupDao.getAllGroup(),true));
         } catch (Exception e) {
             return ResponseEntity.status(NOT_FOUND).body(e.getMessage());
         }

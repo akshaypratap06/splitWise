@@ -11,6 +11,7 @@ import lombok.Setter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 @Getter
 @Setter
@@ -30,8 +31,9 @@ public class Expense {
     @JsonProperty("paid_for_type")
     private ExpenseType paidForType;
 
-    public ExpenseRecordEntity toExpenseRecordEntity(){
+    public ExpenseRecordEntity toExpenseRecordEntity(UUID id){
         ExpenseRecordEntity e= new ExpenseRecordEntity();
+        e.setId(id);
         e.setPaidAmount(Float.parseFloat(String.format("%.2f",this.paidAmount)));
         e.setPaidBy(convertPaid(this.getPaidBy()));
         e.setPaidFor(convertPaid(this.paidFor));

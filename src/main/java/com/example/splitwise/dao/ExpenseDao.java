@@ -2,6 +2,7 @@ package com.example.splitwise.dao;
 
 import com.example.splitwise.entity.ExpenseEntity;
 import com.example.splitwise.entity.ExpenseRecordEntity;
+import com.example.splitwise.entity.UserTransactionEntity;
 import com.example.splitwise.model.UserResponse;
 import com.example.splitwise.model.Expense;
 import jakarta.persistence.EntityManager;
@@ -77,9 +78,9 @@ public class ExpenseDao {
     }
 
     @Transactional
-    public ExpenseRecordEntity saveRecord(Expense expense) {
+    public ExpenseRecordEntity saveRecord(Expense expense,UUID id) {
         Session s = entityManager.unwrap(Session.class);
-        return s.merge(expense.toExpenseRecordEntity());
+        return s.merge(expense.toExpenseRecordEntity(id));
     }
 
     @Transactional
@@ -113,5 +114,12 @@ public class ExpenseDao {
 
     public List<ExpenseRecordEntity> getAllRecord() {
         return entityManager.createQuery("select e from ExpenseRecordEntity e",ExpenseRecordEntity.class).getResultList();
+    }
+    @Transactional
+    public void saveUserTransaction(UUID id, Set<String> users) {
+        Session s = entityManager.unwrap(Session.class);
+        for (String user:users){
+            s.merge(new UserTransactionEntity(user,id));
+        }
     }
 }

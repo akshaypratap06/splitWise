@@ -19,7 +19,7 @@ public class ExpenseRecordEntity {
 
     @Id
     @Column(name = "id")
-    UUID id= UUID.randomUUID();
+    UUID id;
     @Column(name = "paid_by")
     private String paidBy;
     @Column(name = "paid_for")

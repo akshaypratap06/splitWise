@@ -12,7 +12,6 @@ import java.util.List;
 @Getter
 @Setter
 @NoArgsConstructor
-@AllArgsConstructor
 public class PatchUser extends User {
     @JsonProperty("group")
     private String group;
@@ -23,6 +22,11 @@ public class PatchUser extends User {
     public PatchUser(String user, String groups,String friend){
         this.group=groups;
         this.friend=friend;
+        super.setUserName(user);
+    }
+
+    public PatchUser(String user, String groups){
+        this.group=groups;
         super.setUserName(user);
     }
 

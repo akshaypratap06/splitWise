@@ -27,9 +27,10 @@ public class PreReqController {
 
     @Autowired
     ExpenseManager expenseManager;
+
     @GetMapping("v1/prerequisite")
     public String preRequisite() throws Exception {
-//        groupDao.createGroup(new Group("default"));
+        groupDao.createGroup(new Group("default"));
         userDao.addUser(new User("akshay","akshay",new Date()));
         userDao.addUser(new User("pratap","pratap",new Date()));
         userDao.addUser(new User("singh","singh",new Date()));

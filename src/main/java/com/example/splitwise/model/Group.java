@@ -25,6 +25,10 @@ public class Group {
 
     private List<UserEntity> userEntityList;
 
+    public Group(String aDefault) {
+        this.name=aDefault;
+    }
+
     public GroupEntity toGroupEntity(){
         GroupEntity groupEntity= new GroupEntity();
         groupEntity.setGroupName(this.getName());
