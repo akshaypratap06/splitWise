@@ -40,6 +40,7 @@ public class UserDao {
         Session s= entityManager.unwrap(Session.class);
         return Optional.ofNullable(s.get(UserEntity.class, userID));
     }
+
     @Transactional
     public List<UserEntity> getAllUser() {
         return entityManager.createQuery("select u from UserEntity u", UserEntity.class).getResultList();

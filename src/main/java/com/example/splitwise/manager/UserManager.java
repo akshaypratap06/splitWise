@@ -2,11 +2,16 @@ package com.example.splitwise.manager;
 
 import com.example.splitwise.dao.ExpenseDao;
 import com.example.splitwise.dao.UserDao;
+import com.example.splitwise.entity.GroupEntity;
 import com.example.splitwise.entity.UserEntity;
+import com.example.splitwise.model.GroupDTO;
+import com.example.splitwise.model.UserDTO;
 import com.example.splitwise.model.UserResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -25,4 +30,6 @@ public class UserManager {
         }
         return expenseDao.getUserReport(userId);
     }
+
+
 }

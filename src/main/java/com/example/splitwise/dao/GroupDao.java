@@ -1,13 +1,15 @@
 package com.example.splitwise.dao;
 
-import com.example.splitwise.model.Group;
 import com.example.splitwise.entity.GroupEntity;
+import com.example.splitwise.model.Group;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import org.hibernate.Session;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -17,6 +19,8 @@ public class GroupDao {
     @PersistenceContext
     private EntityManager entityManager;
 
+    @Autowired
+    private  UserDao userDao;
 
     @Transactional
     public GroupEntity createGroup(Group group) throws Exception {
@@ -25,6 +29,8 @@ public class GroupDao {
         if(groupEntity.isPresent()){
             throw new Exception("Group already created");
         }
+//        System.out.println(Collections.singletonList(userDao.getUser(group.getCreatedBy()).get().toString()));
+        group.setUserEntityList(userDao.getUsers(group.getUsers()));
         return s.merge(group.toGroupEntity());
     }
 

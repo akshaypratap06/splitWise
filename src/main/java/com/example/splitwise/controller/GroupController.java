@@ -1,8 +1,9 @@
 package com.example.splitwise.controller;
 
+import com.example.splitwise.manager.UtilManager;
 import com.example.splitwise.model.Group;
 import com.example.splitwise.dao.GroupDao;
-import com.example.splitwise.entity.GroupEntity;
+import com.example.splitwise.model.GroupDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,18 +19,23 @@ public class GroupController {
     @Autowired
     private GroupDao groupDao;
 
+    @Autowired
+    private UtilManager utilManager;
+
     @PostMapping("v1/group")
     public ResponseEntity<Object> addGroup(@RequestBody Group group){
         try{
-            return ResponseEntity.ok(groupDao.createGroup(group));
+            return ResponseEntity.ok(utilManager.convertToGroupDto(groupDao.createGroup(group),true));
         }catch (Exception e){
             return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
         }
     }
 
+
+
     @GetMapping("v1/groups")
-    public List<GroupEntity> getAllGroups(){
-        return groupDao.getAllGroup();
+    public List<GroupDTO> getAllGroups(){
+        return utilManager.convertToGroupDtoList(groupDao.getAllGroup(),true);
 
     }
 
