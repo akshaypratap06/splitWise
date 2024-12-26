@@ -11,6 +11,7 @@ import org.hibernate.Session;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.text.DecimalFormat;
 import java.util.*;
 
 @Repository
@@ -18,6 +19,7 @@ public class ExpenseDao {
 
     @PersistenceContext
     private EntityManager entityManager;
+
 
     @Transactional
     public void updateExpense(String user, String user1, float amount, String groupId) {
@@ -56,8 +58,21 @@ public class ExpenseDao {
 
     private UserResponse mapToUserResponse(List<ExpenseEntity> expenseEntity, String userId) {
         Map<String, Map<String, Double>> expense = new HashMap<>();
+        float totalBalance=0.0f;
+        Map<String,Float> oweOwedCalculationMap= new HashMap<>();
+        Map<String,Float> userOwe=new HashMap<>();
+        Map<String,Float> userOwed=new HashMap<>();
+        float amountOwe=0.0f;
+        float amountOwed=0.0f;
         for (ExpenseEntity ex :
                 expenseEntity) {
+            totalBalance+=Float.parseFloat(String.format("%.2f", ex.getLentAmount()));
+            if(ex.getLentAmount()>0){
+                amountOwed+=Float.parseFloat(String.format("%.2f", ex.getLentAmount()));
+            }else{
+                amountOwe+=Float.parseFloat(String.format("%.2f", Math.abs(ex.getLentAmount())));
+            }
+            oweOwedCalculationMap.put(ex.getOtherUserId(),oweOwedCalculationMap.getOrDefault(ex.getOtherUserId(),0.0f)+ex.getLentAmount());
             if (expense.containsKey(ex.getGroupId())) {
                 expense.get(ex.getGroupId()).put(ex.getOtherUserId(), Double.parseDouble(String.format("%.2f", ex.getLentAmount())));
             } else {
@@ -66,9 +81,21 @@ public class ExpenseDao {
                 expense.put(ex.getGroupId(), userExpense);
             }
         }
+        for(Map.Entry<String,Float> currEntry: oweOwedCalculationMap.entrySet()){
+            if(currEntry.getValue()<0){
+                userOwe.put(currEntry.getKey(),Math.abs(currEntry.getValue()));
+            }else if(currEntry.getValue()>0){
+                userOwed.put(currEntry.getKey(),Math.abs(currEntry.getValue()));
+            }
+        }
         UserResponse userResponse = new UserResponse();
         userResponse.setUserName(userId);
         userResponse.setExpenseReport(expense);
+        userResponse.setTotalBalance(Math.abs(totalBalance));
+        userResponse.setYouOwe(Math.abs(amountOwe));
+        userResponse.setYouAreOwed(Math.abs(amountOwed));
+        userResponse.setYouOweMap(userOwe);
+        userResponse.setYouOwedMap(userOwed);
         return userResponse;
     }
 

@@ -56,6 +56,9 @@ public class UserDao {
         if(groupEntity==null ){
             throw new Exception("Group not yet created");
         }
+        if(userEntity.get().getGroupEntityList().contains(groupEntity)){
+            return userEntity.get();
+        }
         List<GroupEntity> groupEntityList= userEntity.get().getGroupEntityList();
         groupEntityList.add(groupEntity);
         userEntity.get().setGroupEntityList(groupEntityList);

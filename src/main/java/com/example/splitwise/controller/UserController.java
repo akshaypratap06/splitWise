@@ -105,7 +105,7 @@ public class UserController {
         }
     }
 
-    @GetMapping("v1/report/{userId}")
+    @GetMapping("v1/dashboard/report/{userId}")
     public ResponseEntity<Object> getUserReport(@PathVariable String userId) {
         try {
             return ResponseEntity.ok(userManager.getUserReport(userId));
