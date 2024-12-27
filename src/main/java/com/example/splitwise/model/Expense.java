@@ -8,6 +8,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -31,6 +32,9 @@ public class Expense {
     @JsonProperty("paid_for_type")
     private ExpenseType paidForType;
 
+    @JsonProperty("description")
+    private String description;
+
     public ExpenseRecordEntity toExpenseRecordEntity(UUID id){
         ExpenseRecordEntity e= new ExpenseRecordEntity();
         e.setId(id);
@@ -38,6 +42,8 @@ public class Expense {
         e.setPaidBy(convertPaid(this.getPaidBy()));
         e.setPaidFor(convertPaid(this.paidFor));
         e.setGroupId(this.groupId);
+        e.setDescription(this.description);
+        e.setDateTime(LocalDateTime.now());
         return e;
     }
 

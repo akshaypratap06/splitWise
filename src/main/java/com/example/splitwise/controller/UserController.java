@@ -105,12 +105,4 @@ public class UserController {
         }
     }
 
-    @GetMapping("v1/dashboard/report/{userId}")
-    public ResponseEntity<Object> getUserReport(@PathVariable String userId) {
-        try {
-            return ResponseEntity.ok(userManager.getUserReport(userId));
-        } catch (Exception e) {
-           return ResponseEntity.status(NOT_FOUND).body(e.getMessage());
-        }
-    }
 }

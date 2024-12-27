@@ -42,7 +42,7 @@ public class GroupController {
     @GetMapping("v1/groups/{group}")
     public ResponseEntity<Object> getGroup(@PathVariable String group){
         try {
-            return ResponseEntity.ok(utilManager.convertToGroupDtoList(groupDao.getAllGroup(),true));
+            return ResponseEntity.ok(utilManager.convertToGroupDto(groupDao.getGroup(group),true));
         } catch (Exception e) {
             return ResponseEntity.status(NOT_FOUND).body(e.getMessage());
         }

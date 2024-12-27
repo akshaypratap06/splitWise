@@ -43,14 +43,14 @@ public class PreReqController {
         Map<String,Float> req1= new HashMap<>();
         req1.put("pratap",400f);
         Map<String,Float> userList= Map.of("akshay",0f,"pratap",0f,"singh",0f);
-        Expense expense= new Expense(ExpenseType.EQUAL,req1,new HashMap<>(userList),400,"default",ExpenseType.EQUAL);
+        Expense expense= new Expense(ExpenseType.EQUAL,req1,new HashMap<>(userList),400,"default",ExpenseType.EQUAL,"hi");
         expenseManager.createExpense(expense);
         req1.put("pratap",200f);
-        expense= new Expense(ExpenseType.EQUAL,req1,new HashMap<>(Map.of("akshay",0f,"pratap",0f)),200,"default",ExpenseType.EQUAL);
+        expense= new Expense(ExpenseType.EQUAL,req1,new HashMap<>(Map.of("akshay",0f,"pratap",0f)),200,"default",ExpenseType.EQUAL,"bye");
         expenseManager.createExpense(expense);
         req1.remove("pratap");
         req1.put("singh",1000f);
-        expense= new Expense(ExpenseType.EQUAL,req1,new HashMap<>(Map.of("akshay",0f,"pratap",0f)),1000,"default",ExpenseType.EQUAL);
+        expense= new Expense(ExpenseType.EQUAL,req1,new HashMap<>(Map.of("akshay",0f,"pratap",0f)),1000,"default",ExpenseType.EQUAL,"ji");
         expenseManager.createExpense(expense);
         return "Created all users and groups";
     }

@@ -7,6 +7,7 @@ import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -28,5 +29,11 @@ public class ExpenseRecordEntity {
     private float paidAmount;
     @Column(name = "group_id")
     private String groupId;
+
+    @Column(name="description")
+    private String description;
+
+    @Column(name="date_time")
+    private LocalDateTime dateTime;
 
 }
