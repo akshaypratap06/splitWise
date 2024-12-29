@@ -47,4 +47,13 @@ public class GroupController {
             return ResponseEntity.status(NOT_FOUND).body(e.getMessage());
         }
     }
+
+    @GetMapping("v1/groups/user/{userId}")
+    public ResponseEntity<Object> getGroupofUser(@PathVariable String userId){
+        try {
+            return ResponseEntity.ok(utilManager.convertToGroupDtoList(groupDao.getGroupByUser(userId),true));
+        } catch (Exception e) {
+            return ResponseEntity.status(NOT_FOUND).body(e.getMessage());
+        }
+    }
 }

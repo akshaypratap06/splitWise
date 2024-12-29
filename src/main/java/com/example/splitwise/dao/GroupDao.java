@@ -1,6 +1,7 @@
 package com.example.splitwise.dao;
 
 import com.example.splitwise.entity.GroupEntity;
+import com.example.splitwise.entity.UserEntity;
 import com.example.splitwise.model.Group;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -47,5 +48,14 @@ public class GroupDao {
         }
         return groupEntity.get();
 
+    }
+    @Transactional
+    public List<GroupEntity> getGroupByUser(String userId) throws Exception {
+        Session s= entityManager.unwrap(Session.class);
+        Optional<UserEntity> userEntity= userDao.getUser(userId);
+        if(userEntity.isEmpty()){
+            throw  new Exception("User Not Found");
+        }
+        return userEntity.get().getGroupEntityList();
     }
 }

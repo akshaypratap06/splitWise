@@ -30,6 +30,8 @@ public class ExpenseManager {
         UUID id= UUID.randomUUID();
         if (expense.getPaidByType().equals(ExpenseType.PERCENTAGE)) {
             updateExpenseByPercentage(expense.getPaidBy(), expense.getPaidAmount());
+        } else if (expense.getPaidByType().equals(ExpenseType.EQUAL)) {
+            updateExpensePaidForEqual(expense.getPaidBy(), expense.getPaidAmount());
         }
         if (expense.getPaidForType().equals(ExpenseType.PERCENTAGE)) {
             updateExpenseByPercentage(expense.getPaidFor(), expense.getPaidAmount());

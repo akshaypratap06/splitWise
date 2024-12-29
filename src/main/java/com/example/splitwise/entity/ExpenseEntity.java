@@ -51,4 +51,15 @@ public class ExpenseEntity {
     public float getLentAmount() {
         return Float.parseFloat(String.format("%.2f",lentAmount));
     }
+
+    @Override
+    public String toString() {
+        return "ExpenseEntity{" +
+                "id=" + id +
+                ", userId='" + userId + '\'' +
+                ", otherUserId='" + otherUserId + '\'' +
+                ", groupId='" + groupId + '\'' +
+                ", lentAmount=" + lentAmount +
+                '}';
+    }
 }
