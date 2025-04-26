@@ -13,20 +13,20 @@ import java.util.Set;
 @Getter
 @Setter
 @NoArgsConstructor
-public class PatchUser extends User {
+public class PatchUser2 extends User {
     @JsonProperty("group")
     private String group;
 
     @JsonProperty("friend")
-    private Set<String> friend;
+    private String friend;
 
-    public PatchUser(String user, String groups,Set<String> friend){
+    public PatchUser2(String user, String groups,String friend){
         this.group=groups;
         this.friend=friend;
         super.setUserName(user);
     }
 
-    public PatchUser(String user, String groups){
+    public PatchUser2(String user, String groups){
         this.group=groups;
         super.setUserName(user);
     }

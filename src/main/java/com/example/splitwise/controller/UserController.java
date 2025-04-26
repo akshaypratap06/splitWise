@@ -1,13 +1,10 @@
 package com.example.splitwise.controller;
 
 import com.example.splitwise.manager.UtilManager;
-import com.example.splitwise.model.GroupDTO;
-import com.example.splitwise.model.PatchUser;
-import com.example.splitwise.model.User;
+import com.example.splitwise.model.*;
 import com.example.splitwise.dao.UserDao;
 import com.example.splitwise.entity.UserEntity;
 import com.example.splitwise.manager.UserManager;
-import com.example.splitwise.model.UserDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -88,7 +85,7 @@ public class UserController {
     }
 
     @PatchMapping("v1/remove-friend-from-user")
-    public ResponseEntity<Object> removeFriendFromUser(@RequestBody PatchUser user){
+    public ResponseEntity<Object> removeFriendFromUser(@RequestBody PatchUser2 user){
         try {
             return ResponseEntity.ok(utilManager.convertToUserDTO(userDao.removeFriendFromUser(user),true));
         } catch (Exception e) {

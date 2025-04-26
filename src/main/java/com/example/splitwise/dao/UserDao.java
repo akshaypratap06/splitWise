@@ -2,6 +2,7 @@ package com.example.splitwise.dao;
 
 import com.example.splitwise.entity.GroupEntity;
 import com.example.splitwise.model.PatchUser;
+import com.example.splitwise.model.PatchUser2;
 import com.example.splitwise.model.User;
 import com.example.splitwise.entity.UserEntity;
 import jakarta.persistence.EntityManager;
@@ -88,7 +89,7 @@ public class UserDao {
     @Transactional
     public UserEntity addFriendToUser(PatchUser user) throws Exception {
         Session s= entityManager.unwrap(Session.class);
-        Optional<UserEntity> friendEntity= getUser(user.getFriend());
+        List<UserEntity> friendEntity= getUsers(user.getFriend());
         Optional<UserEntity> userEntity = getUser(user.getUserName());
         if(userEntity.isEmpty()){
             throw new Exception("User not yet created");
@@ -97,16 +98,18 @@ public class UserDao {
             throw new Exception("Friend's User not yet created");
         }
         Set<String> userEntityList= userEntity.get().getFriendEntityList();
-        userEntityList.add(friendEntity.get().getUserName());
+        userEntityList.addAll(friendEntity.stream().map(UserEntity::getUserName).collect(Collectors.toSet()));
         userEntity.get().setFriendEntityList(userEntityList);
-        Set<String> friendEntityList= friendEntity.get().getFriendEntityList();
-        friendEntityList.add(userEntity.get().getUserName());
-        friendEntity.get().setFriendEntityList(friendEntityList);
-        s.merge(friendEntity.get());
+        for (UserEntity currfriendEntity:friendEntity){
+            Set<String> friendEntityList= currfriendEntity.getFriendEntityList();
+            friendEntityList.add(userEntity.get().getUserName());
+            currfriendEntity.setFriendEntityList(friendEntityList);
+            s.merge(currfriendEntity);
+        }
         return s.merge(userEntity.get());
     }
     @Transactional
-    public UserEntity removeFriendFromUser(PatchUser user) throws Exception {
+    public UserEntity removeFriendFromUser(PatchUser2 user) throws Exception {
         Session s= entityManager.unwrap(Session.class);
         Optional<UserEntity> userEntity = getUser(user.getUserName());
         Optional<UserEntity> friendEntity= getUser(user.getFriend());
